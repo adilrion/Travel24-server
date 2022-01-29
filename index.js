@@ -82,6 +82,12 @@ async function run() {
       const result = await users.toArray();
       res.send(result);
     });
+    app.get("/users/administration/role", async (req, res) => {
+      const query = { role: "admin" };
+      const users = await userCollection.find(query);
+      const result = await users.toArray();
+      res.send(result);
+    });
 
     app.get("/blog-details/:id", async (req, res) => {
       const id = req.params.id;
