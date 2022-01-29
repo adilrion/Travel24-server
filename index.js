@@ -36,7 +36,8 @@ async function run() {
     });
 
     app.get("/blog", async (req, res) => {
-      const blog = BlogCollection.find({});
+      const query = { approve: "approved" };
+      const blog = BlogCollection.find(query);
       const page = req.query.page;
       const size = parseInt(req.query.size);
       let result;
