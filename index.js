@@ -75,6 +75,17 @@ async function run() {
       res.json(blog);
     });
 
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let isAdmin = false;
+      if (user?.role === "admin") {
+        isAdmin = true;
+      }
+      res.json({ admin: isAdmin });
+    });
+
     app.put("/blog/pending-blog/approved", async (req, res) => {
       const blog = req.body;
       const filter = { _id: ObjectId(blog.e) };
@@ -89,17 +100,6 @@ async function run() {
       const updateDoc = { $set: { role: "admin" } };
       const result = await userCollection.updateOne(filter, updateDoc);
       res.json(result);
-    });
-
-    app.get("/users/:email", async (req, res) => {
-      const email = req.params.email;
-      const query = { email: email };
-      const user = await userCollection.findOne(query);
-      let isAdmin = false;
-      if (user?.role === "admin") {
-        isAdmin = true;
-      }
-      res.json({ admin: isAdmin });
     });
   } finally {
     //   await client.close();
