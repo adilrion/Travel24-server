@@ -29,8 +29,9 @@ async function run() {
       res.json(result);
     });
     app.post("/blog", async (req, res) => {
-      const user = req.body;
-      const result = await BlogCollection.insertOne(user);
+      const blog = req.body;
+      blog.createdAt = new Date();
+      const result = await BlogCollection.insertOne(blog);
       res.json(result);
     });
 
@@ -48,12 +49,12 @@ async function run() {
       } else {
         result = await blog.toArray();
       }
-
       res.send({
         result,
         count,
       });
     });
+
     app.get("/blog/latest-blog", async (req, res) => {
       const blog = BlogCollection.find({});
       const result = await blog.limit(10).toArray();
@@ -71,6 +72,14 @@ async function run() {
       const query = { _id: ObjectId(id) };
       const blog = await BlogCollection.findOne(query);
       res.json(blog);
+    });
+
+    app.put("/blog/pending-blog/approved", async (req, res) => {
+      const blog = req.body;
+      const filter = { _id: ObjectId(blog.e) };
+      const updateDoc = { $set: { approve: "approved" } };
+      const result = await BlogCollection.updateOne(filter, updateDoc);
+      res.json(result);
     });
 
     app.put("/users/admin", async (req, res) => {
