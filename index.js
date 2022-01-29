@@ -58,7 +58,7 @@ async function run() {
 
     app.get("/blog/latest-blog", async (req, res) => {
       const blog = BlogCollection.find({});
-      const result = await blog.limit(10).toArray();
+      const result = await blog.toArray();
       res.send(result);
     });
 
