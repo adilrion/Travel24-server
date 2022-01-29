@@ -1,5 +1,7 @@
 const express = require("express");
 const { MongoClient } = require("mongodb");
+const ObjectId = require("mongodb").ObjectId;
+
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
@@ -34,11 +36,62 @@ async function run() {
 
     app.get("/blog", async (req, res) => {
       const blog = BlogCollection.find({});
-      const result = await blog.toArray();
+      const page = req.query.page;
+      const size = parseInt(req.query.size);
+      let result;
+      const count = await blog.count();
+      if (page) {
+        result = await blog
+          .skip(page * size)
+          .limit(size)
+          .toArray();
+      } else {
+        result = await blog.toArray();
+      }
+
+      res.send({
+        result,
+        count,
+      });
+    });
+    app.get("/blog/latest-blog", async (req, res) => {
+      const blog = BlogCollection.find({});
+      const result = await blog.limit(10).toArray();
       res.send(result);
     });
+
+    app.get("/users", async (req, res) => {
+      const users = await userCollection.find({});
+      const result = await users.toArray();
+      res.send(result);
+    });
+
+    app.get("/blog-details/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const blog = await BlogCollection.findOne(query);
+      res.json(blog);
+    });
+
+    app.put("/users/admin", async (req, res) => {
+      const user = req.body;
+      const filter = { email: user.email };
+      const updateDoc = { $set: { role: "admin" } };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.json(result);
+    });
+
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let isAdmin = false;
+      if (user?.role === "admin") {
+        isAdmin = true;
+      }
+      res.json({ admin: isAdmin });
+    });
   } finally {
-    // Ensures that the client will close when you finish/error
     //   await client.close();
   }
 }
